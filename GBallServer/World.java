@@ -8,10 +8,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 
-import Shared.Const;
-import Shared.EntityManager;
-import Shared.MsgData;
-import Shared.Vector2D;
+import Shared.*;
 
 public class World {
 
@@ -67,9 +64,13 @@ public class World {
 		double currentTime = System.currentTimeMillis();
 		double delta = currentTime - m_lastTime;
 		boolean rv = (delta > Const.FRAME_INCREMENT);
-		if (rv) {
+		
+		if (rv)
+		{
 			m_lastTime += Const.FRAME_INCREMENT;
-			if (delta > 10 * Const.FRAME_INCREMENT) {
+			
+			if (delta > 10 * Const.FRAME_INCREMENT)
+			{
 				m_lastTime = currentTime;
 			}
 			m_actualFps = 1000 / delta;

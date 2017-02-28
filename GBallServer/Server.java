@@ -5,7 +5,8 @@ import java.net.*;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import GBallServer.ClientConnection;
+import GBallServer.*;
+import Shared.*;
 
 public class Server
 {
@@ -38,7 +39,7 @@ public class Server
 		{
 			if (m_connectedClients.size() < 4)
 			{
-				byte[] buff = new byte[512];
+				byte[] buff = new byte[1024];
 				DatagramPacket p = new DatagramPacket(buff, buff.length);
 				
 				try
@@ -51,10 +52,29 @@ public class Server
 					e.printStackTrace();
 				}	
 				
-				String recievedMessage = new String(p.getData(), p.getOffset(), p.getLength());
+				ByteArrayInputStream bStream = new ByteArrayInputStream(buff);
+				ObjectInputStream input = null;
+				MsgData receivedMessage = null;
+				try
+				{
+					input = new ObjectInputStream(bStream);
+					receivedMessage = (MsgData)input.readObject();
+				}
+				
+				catch (IOException | ClassNotFoundException e)
+				{
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
+				if(receivedMessage.message)
+				{
+					
+				}
+				
 				System.out.println("IP of new client: " + String.valueOf(p.getAddress() + " Port: " + p.getPort()));
 				
-				if (!recievedMessage.isEmpty())
+				/*if (!recievedMessage.isEmpty())
 				{
 					if (recievedMessage.equals("join"))
 					{
@@ -73,7 +93,7 @@ public class Server
 							e.printStackTrace();
 						}
 					}
-				}
+				}*/
 			}
 		}
 	}
