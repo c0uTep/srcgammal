@@ -59,7 +59,12 @@ public class World {
 			}
 		}
 	}
-
+	
+	public void updateShip(int id, Vector2D position, Vector2D speed, Vector2D direction)
+	{
+		EntityManager.getState().get(id).setPosition(position.getX(), position.getY());
+	}
+	
 	private boolean newFrame() {
 		double currentTime = System.currentTimeMillis();
 		double delta = currentTime - m_lastTime;
