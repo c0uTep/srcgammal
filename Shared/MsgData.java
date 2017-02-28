@@ -9,7 +9,7 @@ public class MsgData implements Serializable {
 	 */
 	private static final long serialVersionUID = 1L;
 
-	public String message;
+	public String m_string;
 	
 	public Vector2D m_position;
 	public Vector2D m_initialPosition;
@@ -25,7 +25,7 @@ public class MsgData implements Serializable {
 		m_initialDirection = new Vector2D();
 		m_speed = new Vector2D();
 		m_direction = new Vector2D();
-		message = null;
+		m_string = null;
 	}
 
 	public MsgData(Vector2D position, Vector2D initialPosition, Vector2D initialDirection, Vector2D speed,
@@ -39,7 +39,7 @@ public class MsgData implements Serializable {
 	}
 	
 	public MsgData(String input){
-		message = input;
+		m_string = input;
 	}
 
 }
