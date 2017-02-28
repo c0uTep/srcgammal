@@ -1,7 +1,9 @@
 package GBallClient;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.net.DatagramPacket;
@@ -17,16 +19,16 @@ public class ServerConnection {
 	// samt även ta hand om att skicka meddelanden till servern under spelets
 	// gång.
 
-	private InetAddress mServerAddress;
-	private int mServerPort;
-	private DatagramSocket mSocket;
+	private InetAddress m_serverAddress;
+	private int m_serverPort;
+	private DatagramSocket m_socket;
 
 	public ServerConnection(InetAddress address, int port) {
-		mServerAddress = address;
-		mServerPort = port;
+		m_serverAddress = address;
+		m_serverPort = port;
 
 		try {
-			mSocket = new DatagramSocket(mServerPort, mServerAddress);
+			m_socket = new DatagramSocket(m_serverPort, m_serverAddress);
 		}
 
 		catch (SocketException e) {
@@ -35,54 +37,99 @@ public class ServerConnection {
 		}
 	}
 
-	public boolean handshake() {
+	public boolean handshake(MsgData data) {
+		
+		//Skicka meddelande till servern
+		ByteArrayOutputStream bStream = new ByteArrayOutputStream();
+		ObjectOutput output;
+		try {
+			output = new ObjectOutputStream(bStream);
+			output.writeObject(data);
+			output.close();
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
 
-		// if (/*connection successful*/)
-		/*
-		 * return true;
-		 * 
-		 * else return false;
-		 */
-		return true;
+		byte[] serializedMessage = bStream.toByteArray();
 
+		DatagramPacket packet = new DatagramPacket(serializedMessage, serializedMessage.length, m_serverAddress,	m_serverPort);
+		try {
+			m_socket.send(packet);
+		} catch (IOException e) {
+			System.err.println("Failed to send message.");
+			e.printStackTrace();
+		}
+		
+		//Vänta på svar från servern
+		byte[] buff = new byte[1024];
+		ObjectInputStream iStream;
+		MsgData message = null;
+		packet = new DatagramPacket(buff, buff.length);
+		
+		try {
+			m_socket.receive(packet);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		try {
+			iStream = new ObjectInputStream(new ByteArrayInputStream(buff));
+			message = (MsgData) iStream.readObject();
+			iStream.close();
+		} catch (IOException | ClassNotFoundException e1) {
+			e1.printStackTrace();
+		}
+		
+		if(message.message.equals("true")){
+			return true;
+		}
+		else{
+			return false;
+		}
 	}
 
 	public void sendMessage(MsgData data) {
 		ByteArrayOutputStream bStream = new ByteArrayOutputStream();
-		ObjectOutput output = new ObjectOutputStream(bStream);
-		output.writeObject(data);
-		output.close();
+		ObjectOutput output;
+		try {
+			output = new ObjectOutputStream(bStream);
+			output.writeObject(data);
+			output.close();
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
 
 		byte[] serializedMessage = bStream.toByteArray();
 
-		DatagramPacket packet = new DatagramPacket(serializedMessage, serializedMessage.length, mServerAddress,
-				mServerPort);
+		DatagramPacket packet = new DatagramPacket(serializedMessage, serializedMessage.length, m_serverAddress,	m_serverPort);
 		try {
-			mSocket.send(packet);
+			m_socket.send(packet);
 		} catch (IOException e) {
 			System.err.println("Failed to send message.");
 			e.printStackTrace();
 		}
 	}
 
-	public String receiveMessage() {
-		// MsgData receivedMessage = null;
-
-		byte[] buf = new byte[256];
-		DatagramPacket packet = new DatagramPacket(buf, buf.length);
-
+	public MsgData receiveMessage() {
+		byte[] buff = new byte[1024];
+		ObjectInputStream iStream;
+		MsgData message = null;
+		DatagramPacket packet = new DatagramPacket(buff, buff.length);
+		
 		try {
-			mSocket.receive(packet); // Ta emot paket
+			m_socket.receive(packet);
 		} catch (IOException e) {
-			System.err.println("Couldn't recieve message (ServerConnection, recieveChatMessage");
 			e.printStackTrace();
 		}
-
-		String message = new String(packet.getData(), packet.getOffset(), packet.getLength()); // Unmarshal
-																								// packet
-																								// till
-																								// message-string
-
+		
+		try {
+			iStream = new ObjectInputStream(new ByteArrayInputStream(buff));
+			message = (MsgData) iStream.readObject();
+			iStream.close();
+		} catch (IOException | ClassNotFoundException e1) {
+			e1.printStackTrace();
+		}
+		
 		return message;
 
 	}
