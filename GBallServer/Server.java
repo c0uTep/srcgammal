@@ -5,16 +5,14 @@ import java.net.*;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import GBallServer.*;
 import Shared.*;
 
 public class Server
 {
 	private ArrayList<ClientConnection> m_connectedClients = new ArrayList<ClientConnection>();
 	private static DatagramSocket m_socket;
-	private int m_port = 0;
 	
-	public static void main(String[] args)
+	public void main(String[] args)
 	{
 		if (args.length < 1)
 		{
@@ -31,6 +29,7 @@ public class Server
 		{
 			e.printStackTrace();
 		}
+		listenForMessages();
 	}
 	
 	private void listenForMessages()
@@ -55,6 +54,7 @@ public class Server
 				ByteArrayInputStream bStream = new ByteArrayInputStream(buff);
 				ObjectInputStream input = null;
 				MsgData receivedMessage = null;
+				
 				try
 				{
 					input = new ObjectInputStream(bStream);
@@ -67,33 +67,44 @@ public class Server
 					e.printStackTrace();
 				}
 				
-				if(receivedMessage.message)
+				if(receivedMessage.m_string.equals("join"))
+				{
+					MsgData handshake = new MsgData(String.valueOf(addClient(p.getAddress(), p.getPort())));				
+					ByteArrayOutputStream boStream = new ByteArrayOutputStream();
+					ObjectOutputStream output = null;
+					
+					try
+					{
+						output = new ObjectOutputStream(boStream);
+						output.writeObject(handshake);
+					}
+					
+					catch (IOException e)
+					{
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					
+					byte[] buf = boStream.toByteArray();
+					DatagramPacket packet = new DatagramPacket(buf, buf.length, p.getAddress(), p.getPort());
+					
+					try
+					{
+						m_socket.send(packet);
+					}
+					
+					catch (IOException e)
+					{
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+				
+				else
 				{
 					
 				}
-				
 				System.out.println("IP of new client: " + String.valueOf(p.getAddress() + " Port: " + p.getPort()));
-				
-				/*if (!recievedMessage.isEmpty())
-				{
-					if (recievedMessage.equals("join"))
-					{
-						byte[] ackBuff = new byte[512];
-						String ackMessage = String.valueOf(addClient(p.getAddress(), p.getPort()));
-						ackBuff = ackMessage.getBytes();
-						DatagramPacket ackPacket = new DatagramPacket(ackBuff, ackBuff.length, p.getAddress(), p.getPort());
-						
-						try
-						{
-							m_socket.send(ackPacket);
-						}
-						
-						catch (IOException e)
-						{
-							e.printStackTrace();
-						}
-					}
-				}*/
 			}
 		}
 	}
