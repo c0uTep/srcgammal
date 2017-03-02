@@ -11,6 +11,7 @@ public class MsgData implements Serializable {
 
 	public String m_string;
 	public EntitiesHolder m_entities;
+	public int m_playerID = -1;
 	
 	/*public Vector2D m_position;
 	public Vector2D m_initialPosition;
@@ -45,13 +46,14 @@ public class MsgData implements Serializable {
 		m_entities = gameEntites;
 	}
 	
-	public MsgData(EntitiesHolder gameEntites, String string){
+	public MsgData(EntitiesHolder gameEntites, String score){
 		m_entities = gameEntites;
-		m_string = string;
+		m_string = score;
 	}
 	
-	public MsgData(String input){
+	public MsgData(String input, int playerIdentification){
 		m_string = input;
+		m_playerID = playerIdentification;
 	}
 
 }
