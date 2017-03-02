@@ -2,6 +2,10 @@ package Shared;
 
 public class EntitiesHolder {
 	
+	/* 
+	 * EntitiesHolder - Holder for all entities that are going to be sent to clients.
+	 */
+	
 	public GameEntity ship1 = null;
 	public GameEntity ship2 = null;
 	public GameEntity ship3 = null;
