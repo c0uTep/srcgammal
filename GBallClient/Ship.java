@@ -61,7 +61,7 @@ public class Ship extends GameEntity implements KeyListener {
 	@Override
 	public void keyTyped(KeyEvent e) {
 	}
-
+	
 	@Override
 	public void move() {
 		if (rotation != 0) {
