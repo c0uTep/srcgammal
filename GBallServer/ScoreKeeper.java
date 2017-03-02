@@ -25,4 +25,13 @@ public class ScoreKeeper {
 		m_team1Score = 0;
 		m_team2Score = 0;
 	}
+	
+	public int ScoreTeam1(){
+		return m_team1Score;
+	}
+	
+	public int ScoreTeam2(){
+		return m_team2Score;
+	}
+	
 }
