@@ -80,7 +80,7 @@ public class ServerConnection {
 			e1.printStackTrace();
 		}
 		
-		if(message.message.equals("true")){
+		if(message.m_string.equals("true")){
 			return true;
 		}
 		else{

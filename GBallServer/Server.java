@@ -5,15 +5,14 @@ import java.net.*;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import GBallServer.ClientConnection;
+import Shared.*;
 
 public class Server
 {
 	private ArrayList<ClientConnection> m_connectedClients = new ArrayList<ClientConnection>();
 	private static DatagramSocket m_socket;
-	private int m_port = 0;
 	
-	public static void main(String[] args)
+	public void main(String[] args)
 	{
 		if (args.length < 1)
 		{
@@ -30,6 +29,8 @@ public class Server
 		{
 			e.printStackTrace();
 		}
+		
+		listenForMessages();
 	}
 	
 	private void listenForMessages()
@@ -38,7 +39,7 @@ public class Server
 		{
 			if (m_connectedClients.size() < 4)
 			{
-				byte[] buff = new byte[512];
+				byte[] buff = new byte[1024];
 				DatagramPacket p = new DatagramPacket(buff, buff.length);
 				
 				try
@@ -51,29 +52,35 @@ public class Server
 					e.printStackTrace();
 				}	
 				
-				String recievedMessage = new String(p.getData(), p.getOffset(), p.getLength());
-				System.out.println("IP of new client: " + String.valueOf(p.getAddress() + " Port: " + p.getPort()));
+				ByteArrayInputStream bStream = new ByteArrayInputStream(buff);
+				ObjectInputStream input = null;
+				MsgData receivedMessage = null;
 				
-				if (!recievedMessage.isEmpty())
+				try
 				{
-					if (recievedMessage.equals("join"))
-					{
-						byte[] ackBuff = new byte[512];
-						String ackMessage = String.valueOf(addClient(p.getAddress(), p.getPort()));
-						ackBuff = ackMessage.getBytes();
-						DatagramPacket ackPacket = new DatagramPacket(ackBuff, ackBuff.length, p.getAddress(), p.getPort());
-						
-						try
-						{
-							m_socket.send(ackPacket);
-						}
-						
-						catch (IOException e)
-						{
-							e.printStackTrace();
-						}
-					}
+					input = new ObjectInputStream(bStream);
+					receivedMessage = (MsgData)input.readObject();
 				}
+				
+				catch (IOException | ClassNotFoundException e)
+				{
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
+				if(receivedMessage.m_string.equals("join"))
+				{
+					MsgData handshake = new MsgData(String.valueOf(addClient(p.getAddress(), p.getPort())));
+					ClientConnection c = getClient(p.getAddress(), p.getPort());
+					if(c != null)
+						c.sendMessage(handshake, m_socket);
+				}
+				
+				else
+				{
+					world.updateShip(receivedMessage.m_playerID, receivedMessage.m_position, receivedMessage.m_speed, receivedMessage.m_direction);
+				}
+				System.out.println("IP of new client: " + String.valueOf(p.getAddress() + " Port: " + p.getPort()));
 			}
 		}
 	}
@@ -89,5 +96,17 @@ public class Server
 		System.out.println("Added a new client.");
 		m_connectedClients.add(new ClientConnection(address, port));
 		return true;
+	}
+	
+	public ClientConnection getClient(InetAddress address, int port)
+	{
+		ClientConnection c;
+		for (Iterator<ClientConnection> itr = m_connectedClients.iterator(); itr.hasNext();) {
+			c = itr.next();
+			if (c.getAddress().equals(address) && c.getPort() == port) {
+				return c;
+			}
+		}
+		return null;
 	}
 }
